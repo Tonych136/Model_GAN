@@ -1,6 +1,6 @@
 import argparse
 import sys
-from ant_env import AntEnv
+from halfcheetah_shortleg import HalfCheetahEnv
 
 import gym
 from gym import wrappers, logger
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # want to change the amount of output.
     logger.set_level(logger.INFO)
 
-    env = AntEnv()
+    env = HalfCheetahEnv()
 
     # You provide the directory to write to (can be an existing
     # directory, including one with existing data -- all monitor files
@@ -39,9 +39,9 @@ if __name__ == '__main__':
 
     for i in range(episode_count):
         ob = env.reset()
-        action = agent.act(ob, reward, done)
+        #action = agent.act(ob, reward, done)
         while True:
-            #action = agent.act(ob, reward, done)
+            action = agent.act(ob, reward, done)
             ob, reward, done, _ = env.step(action)
             env.render()
             if done:

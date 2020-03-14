@@ -8,7 +8,12 @@ from robot.utils.data_parallel import DataParallel
 from collections import OrderedDict
 from ant_env import AntEnv
 
-from robot.envs.hyrule import make, dump_json, load_json
+#from robot.envs.hyrule import make, dump_json, load_json
+
+def make(filepath, timestep=100):
+    from gym.wrappers import TimeLimit
+    env = AntEnv()
+    return TimeLimit(env, timestep)
 
 class Rollout:
     def __init__(self, make, env_name):
@@ -98,7 +103,7 @@ def eval_policy(policy, eval_env, eval_episodes=10, save_video=0, video_path="vi
 
 def add_parser(parser):
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--env_name', type=str, default='halfcheetah')
+    parser.add_argument('--env_name', type=str, default='ant')
     parser.add_argument('--iter_num', type=int, default=5)
     parser.add_argument('--initial_iter', type=int, default=0)
     parser.add_argument('--num_mutation', type=int, default=400)
@@ -123,7 +128,7 @@ def main():
 
     model = SapienMujocoRolloutModel(args.env_name, n=args.num_proc)
 
-    env = AntEnv()
+    env = make(args.env_name)
     controller = RolloutCEM(model, action_space=env.action_space,
                             add_actions=args.add_actions,
                             horizon=args.horizon, std=args.std,
@@ -132,9 +137,9 @@ def main():
                             num_mutation=args.num_mutation, num_elite=args.num_elite, alpha=0.1, trunc_norm=True, lower_bound=env.action_space.low, upper_bound=env.action_space.high)
     trajectories = eval_policy(controller, env, args.num_test, args.video_num, args.video_path, timestep=args.timestep)
 
-    params = load_json(args.env_name)
-    params['trajectories'] = trajectories
-    dump_json(args.output_path, params)
+    #params = load_json(args.env_name)
+    #params['trajectories'] = trajectories
+    #dump_json(args.output_path, params)
 
 
 if __name__ == '__main__':
