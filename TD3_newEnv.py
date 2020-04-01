@@ -12,6 +12,7 @@ import robot.controller.td3.TD3 as TD3
 # Runs policy for X episodes and returns average reward
 # A fixed seed is used for the eval environment
 def eval_policy(policy, env_name, seed, eval_episodes=10):
+	#eval_env = gym.make(env_name)
 	eval_env = ModelParamEnv()
 	eval_env.seed(seed + 100)
 
@@ -28,7 +29,6 @@ def eval_policy(policy, env_name, seed, eval_episodes=10):
 
 	print("---------------------------------------")
 	print(f"Evaluation over {eval_episodes} episodes: {avg_reward:.3f}")
-	print('state ' + str(state))
 	print("---------------------------------------")
 	return avg_reward
 
@@ -39,9 +39,9 @@ if __name__ == "__main__":
 	parser.add_argument("--policy", default="TD3")                  # Policy name (TD3, DDPG or OurDDPG)
 	parser.add_argument("--env", default="HalfCheetah-v2")          # OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)              # Sets Gym, PyTorch and Numpy seeds
-	parser.add_argument("--start_timesteps", default=25e3, type=int)# Time steps initial random policy is used
-	parser.add_argument("--eval_freq", default=5e3, type=int)       # How often (time steps) we evaluate
-	parser.add_argument("--max_timesteps", default=1e6, type=int)   # Max time steps to run environment
+	parser.add_argument("--start_timesteps", default=0, type=int)   # Time steps initial random policy is used
+	parser.add_argument("--eval_freq", default=5e2, type=int)       # How often (time steps) we evaluate
+	parser.add_argument("--max_timesteps", default=1e3, type=int)   # Max time steps to run environment
 	parser.add_argument("--expl_noise", default=0.1)                # Std of Gaussian exploration noise
 	parser.add_argument("--batch_size", default=256, type=int)      # Batch size for both actor and critic
 	parser.add_argument("--discount", default=0.99)                 # Discount factor
@@ -64,7 +64,9 @@ if __name__ == "__main__":
 	if args.save_model and not os.path.exists("./models"):
 		os.makedirs("./models")
 
-	env = ModelParamEnv()
+	#env = gym.make('HalfCheetah-v2')
+	#env = HalfCheetahEnv()
+	env= ModelParamEnv()
 
 	# Set seeds
 	env.seed(args.seed)
@@ -91,9 +93,8 @@ if __name__ == "__main__":
 		kwargs["policy_freq"] = args.policy_freq
 		policy = TD3.TD3(**kwargs)
 
-	if args.load_model != "":
-		policy_file = file_name if args.load_model == "default" else args.load_model
-		policy.load(f"./models/{policy_file}")
+	
+	#policy.load(f"./models/{file_name}")
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
 	
@@ -120,7 +121,9 @@ if __name__ == "__main__":
 
 		# Perform action
 		next_state, reward, done, _ = env.step(action) 
-		done_bool = float(done) if episode_timesteps < 100 else 0
+		print('state ' + str(next_state))
+		#done_bool = float(done) if episode_timesteps < env._max_episode_steps else 0
+		done_bool = float(done) if episode_timesteps < 1000 else 0
 
 		# Store data in replay buffer
 		replay_buffer.add(state, action, next_state, reward, done_bool)
@@ -146,4 +149,4 @@ if __name__ == "__main__":
 			evaluations.append(eval_policy(policy, args.env, args.seed))
 			np.save(f"./results/{file_name}", evaluations)
 			#if args.save_model: policy.save(f"./models/{file_name}")
-			policy.save(f"./models/{file_name}")
+			#policy.save(f"./models/{file_name}")

@@ -1,6 +1,7 @@
 import numpy as np
 from gym import utils
 import mujoco_env
+import ipdb
 
 class AntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
@@ -29,11 +30,13 @@ class AntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             reward_survive=survive_reward)
 
     def _get_obs(self):
-        return np.concatenate([
-            self.sim.data.qpos.flat[2:],
-            self.sim.data.qvel.flat,
-            np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-        ])
+        return np.concatenate([self.sim.data.qpos,
+                               self.sim.data.qvel,])
+        #return np.concatenate([
+        #    self.sim.data.qpos.flat[2:],
+        #    self.sim.data.qvel.flat,
+        #    np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
+        #])
 
     def reset_model(self):
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-.1, high=.1)
@@ -41,5 +44,12 @@ class AntEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
         return self._get_obs()
 
+    def load_state_vector(self,state):
+        self.set_state(state[0:15],state[15:29])
+        
     def viewer_setup(self):
         self.viewer.cam.distance = self.model.stat.extent * 0.5
+
+if __name__ == '__main__':
+    env = AntEnv()
+    ipdb.set_trace()

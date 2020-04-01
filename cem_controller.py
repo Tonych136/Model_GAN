@@ -18,6 +18,7 @@ def make(filepath, timestep=100):
 class Rollout:
     def __init__(self, make, env_name):
         self.env = make(env_name)
+        self.env.reset()
 
     def __call__(self, s, a):
         rewards = []
@@ -74,8 +75,8 @@ def eval_policy(policy, eval_env, eval_episodes=10, save_video=0, video_path="vi
                         out = cv2.VideoWriter(
                             video_path.format(episode_id), cv2.VideoWriter_fourcc(*'MJPG'), 20.0, (img.shape[1], img.shape[0]))
                     out.write(img)
-                else:
-                    eval_env.render()
+                #else:
+            eval_env.render()
 
             state = np.array(eval_env.unwrapped.state_vector())
             states.append(state.tolist())
@@ -104,18 +105,18 @@ def eval_policy(policy, eval_env, eval_episodes=10, save_video=0, video_path="vi
 def add_parser(parser):
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--env_name', type=str, default='ant')
-    parser.add_argument('--iter_num', type=int, default=5)
+    parser.add_argument('--iter_num', type=int, default=20)
     parser.add_argument('--initial_iter', type=int, default=0)
     parser.add_argument('--num_mutation', type=int, default=400)
     parser.add_argument('--num_elite', type=int, default=20)
     parser.add_argument('--std', type=float, default=0.5)
-    parser.add_argument('--horizon', type=int, default=10)
+    parser.add_argument('--horizon', type=int, default=20)
     parser.add_argument('--num_proc', type=int, default=20)
-    parser.add_argument('--video_num', type=int, default=1)
+    parser.add_argument('--video_num', type=int, default=0)
     parser.add_argument('--video_path', type=str, default='video{}.avi')
     parser.add_argument('--output_path', type=str, default='tmp.json')
     parser.add_argument('--num_test', type=int, default=1)
-    parser.add_argument('--timestep', type=int, default=100)
+    parser.add_argument('--timestep', type=int, default=200)
     parser.add_argument('--add_actions', type=int, default=1)
     parser.add_argument('--controller', type=str, default='cem', choices=['cem', 'poplin'])
 

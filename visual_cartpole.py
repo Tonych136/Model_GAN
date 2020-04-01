@@ -1,9 +1,11 @@
 import argparse
 import sys
-from halfcheetah_shortleg import HalfCheetahEnv
+from cartpole import CartPoleEnv
 
 import gym
 from gym import wrappers, logger
+import numpy as np
+import pickle 
 
 class RandomAgent(object):
     """The world's simplest agent!"""
@@ -23,7 +25,8 @@ if __name__ == '__main__':
     # want to change the amount of output.
     logger.set_level(logger.INFO)
 
-    env = HalfCheetahEnv()
+    env = CartPoleEnv(gravity = 8, masscart = 1.3, masspole = 0.2, 
+                        length = 0.7, force_mag = 8.0)
 
     # You provide the directory to write to (can be an existing
     # directory, including one with existing data -- all monitor files
@@ -38,15 +41,30 @@ if __name__ == '__main__':
     reward = 0
     done = False
 
+    action_record = []
+    state_record = []
     for i in range(episode_count):
         ob = env.reset()
         #action = agent.act(ob, reward, done)
+        traj_action = []
+        traj_state = []
         while True:
             action = agent.act(ob, reward, done)
             ob, reward, done, _ = env.step(action)
-            env.render()
+            traj_action.append(action)
+            traj_state.append(ob)
+            print(done)
+            #env.render()
             if done:
                 break
+        action_record.append(traj_action)
+        state_record.append(traj_state)
+    action_record = np.asarray(action_record)
+    state_record = np.asarray(state_record)
+    record = {'actions': action_record, 'states':state_record}
+
+    record_file = open('record.pickle', 'wb')
+    pickle.dump(record, record_file)
             # Note there's no env.render() here. But the environment still can open window and
             # render if asked by env.monitor: it calls env.render('rgb_array') to record video.
             # Video is not recorded every episode, see capped_cubic_video_schedule for details.
